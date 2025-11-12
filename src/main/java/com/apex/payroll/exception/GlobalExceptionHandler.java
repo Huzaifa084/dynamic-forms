@@ -213,7 +213,8 @@ public class GlobalExceptionHandler {
                 if (idx2 > idx) invalid = msg.substring(idx + 1, idx2);
             }
             userMsg = "Invalid roleType" + (invalid != null ? (": " + invalid) : "")
-                    + ". Allowed: SYSTEM_OWNER, SYSTEM_ADMIN, SYSTEM_USER, AGENCY_OWNER, AGENCY_ADMIN, AGENCY_USER, SUB_ACCOUNT_OWNER, SUB_ACCOUNT_ADMIN, SUB_ACCOUNT_USER, CUSTOMER";
+                    + ". Allowed: SYSTEM_OWNER, SYSTEM_ADMIN, SYSTEM_USER, AGENCY_OWNER, AGENCY_ADMIN," +
+                    " AGENCY_USER, SUB_ACCOUNT_OWNER, SUB_ACCOUNT_ADMIN, SUB_ACCOUNT_USER, CUSTOMER";
         } else if (hint != null && !hint.isBlank()) {
             // Example: "Unexpected character ('{') ... was expecting double-quote ..."
             userMsg = "Malformed request body: " + hint;
