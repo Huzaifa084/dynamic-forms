@@ -1,4 +1,4 @@
-package com.apex.payroll.service.forms;
+package com.apex.payroll.service.froms;
 
 import com.apex.payroll.dto.forms.ColumnInfoDto;
 import com.apex.payroll.dto.forms.TableInfoDto;

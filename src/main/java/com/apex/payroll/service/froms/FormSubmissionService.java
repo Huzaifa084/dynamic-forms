@@ -1,4 +1,4 @@
-package com.apex.payroll.service.forms;
+package com.apex.payroll.service.froms;
 
 import com.apex.payroll.dto.forms.SubmitFormRequest;
 import com.apex.payroll.model.FormDefinition;

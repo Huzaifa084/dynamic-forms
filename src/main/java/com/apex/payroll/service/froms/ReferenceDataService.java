@@ -1,4 +1,4 @@
-package com.apex.payroll.service.forms;
+package com.apex.payroll.service.froms;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

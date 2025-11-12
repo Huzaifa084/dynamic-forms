@@ -4,8 +4,8 @@ import com.apex.payroll.dto.base.BaseResponseEntity;
 import com.apex.payroll.dto.base.ResponseBuilder;
 import com.apex.payroll.dto.forms.TableDataResponse;
 import com.apex.payroll.dto.forms.TableMetadataResponse;
-import com.apex.payroll.service.forms.MetadataService;
-import com.apex.payroll.service.forms.ReferenceDataService;
+import com.apex.payroll.service.froms.MetadataService;
+import com.apex.payroll.service.froms.ReferenceDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,8 +34,9 @@ public class MetadataController {
             @PathVariable String tableName,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "50") Integer limit,
-            @RequestHeader("X-Company-ID") UUID companyId) {
+            @RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
         try {
+            companyId = setCompanyIdIfNull(companyId);
             TableDataResponse response = new TableDataResponse();
             response.setTableName(tableName);
             response.setData(referenceDataService.getReferenceData(tableName, search, companyId, limit));
@@ -45,5 +46,12 @@ public class MetadataController {
         } catch (Exception e) {
             return ResponseBuilder.error(e.getMessage());
         }
+    }
+    // TODO: For dev only
+    private UUID setCompanyIdIfNull(UUID companyId) {
+        if (companyId == null) {
+            return UUID.fromString("5a0c4535-d39d-4a1f-b847-b2717ca3640f");
+        }
+        return companyId;
     }
 }
