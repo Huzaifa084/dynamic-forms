@@ -30,7 +30,7 @@ public class FormSubmission extends AbstractAuditable<Long> {
     @Column(name = "data", columnDefinition = "jsonb", nullable = false)
     private String data;
 
-    @Column(name = "searchable_text")
+    @Column(name = "searchable_text", columnDefinition = "text")
     private String searchableText;
 
     @ManyToOne(fetch = FetchType.LAZY)

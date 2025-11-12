@@ -73,7 +73,12 @@ public class FormSubmissionService {
     private String extractSearchableText(Map<String, Object> data) {
         StringBuilder searchable = new StringBuilder();
         flattenDataForSearch(data, searchable);
-        return searchable.toString().trim();
+        String out = searchable.toString().trim();
+        // Guard against DB column length limits (commonly 255 for String)
+        if (out.length() > 255) {
+            out = out.substring(0, 255);
+        }
+        return out;
     }
     
     private void flattenDataForSearch(Object data, StringBuilder result) {
@@ -82,7 +87,10 @@ public class FormSubmissionService {
         } else if (data instanceof Iterable) {
             ((Iterable<?>) data).forEach(value -> flattenDataForSearch(value, result));
         } else if (data != null) {
-            result.append(data.toString()).append(" ");
+            String s = data.toString();
+            // Avoid appending extremely long tokens (e.g., base64 signatures)
+            if (s.length() > 256) s = s.substring(0, 256);
+            result.append(s).append(" ");
         }
     }
 }

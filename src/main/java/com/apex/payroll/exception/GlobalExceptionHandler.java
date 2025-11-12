@@ -199,8 +199,13 @@ public class GlobalExceptionHandler {
     public BaseResponseEntity<?> handleJsonParse(HttpMessageNotReadableException ex) {
         String msg = ex.getMessage();
         String userMsg = "Malformed request body";
+
+        // Prefer a specific, sanitized root cause to help clients fix JSON
+        String root = ExceptionUtils.getRootCauseMessage(ex);
+        String hint = (root != null) ? sanitizeMessage(root) : null;
+
+        // Keep any special-casing first (example for RoleType)
         if (msg != null && msg.contains("Cannot deserialize value of type") && msg.contains("RoleType")) {
-            // Extract invalid token between quotes if possible
             String invalid = null;
             int idx = msg.indexOf('"');
             if (idx >= 0) {
@@ -209,7 +214,11 @@ public class GlobalExceptionHandler {
             }
             userMsg = "Invalid roleType" + (invalid != null ? (": " + invalid) : "")
                     + ". Allowed: SYSTEM_OWNER, SYSTEM_ADMIN, SYSTEM_USER, AGENCY_OWNER, AGENCY_ADMIN, AGENCY_USER, SUB_ACCOUNT_OWNER, SUB_ACCOUNT_ADMIN, SUB_ACCOUNT_USER, CUSTOMER";
+        } else if (hint != null && !hint.isBlank()) {
+            // Example: "Unexpected character ('{') ... was expecting double-quote ..."
+            userMsg = "Malformed request body: " + hint;
         }
+
         return errorResponse(ex, userMsg, APIActionCode.BAD400, "JSON_PARSE_ERROR");
     }
 
