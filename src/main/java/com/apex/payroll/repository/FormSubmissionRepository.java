@@ -36,7 +36,8 @@ public interface FormSubmissionRepository extends JpaRepository<FormSubmission, 
             @Param("value") String value);
 
     @Query(value = "SELECT * FROM form_submissions WHERE company_id = :companyId " +
-            "AND to_tsvector('english', searchable_text) @@ plainto_tsquery('english', :searchTerm)",
+            "AND to_tsvector('english', searchable_text) @@ plainto_tsquery('english', :searchTerm) " +
+            "ORDER BY submitted_at DESC",
             countQuery = "SELECT count(*) FROM form_submissions WHERE company_id = :companyId " +
                     "AND to_tsvector('english', searchable_text) @@ plainto_tsquery('english', :searchTerm)",
             nativeQuery = true)

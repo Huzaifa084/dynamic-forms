@@ -81,7 +81,7 @@ public class FormSubmissionController {
             @RequestParam(defaultValue = "50") int size) {
         try {
             companyId = setCompanyIdIfNull(companyId);
-            Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
+            Pageable pageable = PageRequest.of(page, size); // Native query handles ordering by submitted_at DESC
             Page<FormSubmission> submissions = formSubmissionService.fullTextSearch(companyId, q, pageable);
 
             Page<FormSubmissionResponse> response = submissions.map(this::toResponse);
