@@ -35,11 +35,17 @@ public interface FormSubmissionRepository extends JpaRepository<FormSubmission, 
             @Param("fieldPath") String fieldPath,
             @Param("value") String value);
 
-    @Query(value = "SELECT * FROM form_submissions WHERE company_id = :companyId " +
-            "AND to_tsvector('english', searchable_text) @@ plainto_tsquery('english', :searchTerm) " +
-            "ORDER BY submitted_at DESC",
-            countQuery = "SELECT count(*) FROM form_submissions WHERE company_id = :companyId " +
-                    "AND to_tsvector('english', searchable_text) @@ plainto_tsquery('english', :searchTerm)",
+    @Query(value = "SELECT fs.* FROM form_submissions fs " +
+            "JOIN form_definitions fd ON fd.id = fs.form_definition_id " +
+            "WHERE fs.company_id = :companyId " +
+            "AND to_tsvector('english', coalesce(fs.searchable_text,'') || ' ' || coalesce(fd.name,'')) " +
+            "@@ plainto_tsquery('english', :searchTerm) " +
+            "ORDER BY fs.submitted_at DESC",
+            countQuery = "SELECT count(*) FROM form_submissions fs " +
+                    "JOIN form_definitions fd ON fd.id = fs.form_definition_id " +
+                    "WHERE fs.company_id = :companyId " +
+                    "AND to_tsvector('english', coalesce(fs.searchable_text,'') || ' ' || coalesce(fd.name,'')) " +
+                    "@@ plainto_tsquery('english', :searchTerm)",
             nativeQuery = true)
     Page<FormSubmission> fullTextSearch(
             @Param("companyId") UUID companyId,
