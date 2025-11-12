@@ -56,9 +56,10 @@ public class FormValidationService {
         }
     }
 
-    private void validateComponentsRecursive(List<Map<String, Object>> components,
-                                             List<String> errors,
-                                             String parentKey) {
+    private void validateComponentsRecursive(
+            List<Map<String, Object>> components,
+            List<String> errors,
+            String parentKey) {
         int index = 0;
         for (Map<String, Object> comp : components) {
             index++;
@@ -138,8 +139,7 @@ public class FormValidationService {
             case "tags" -> (value instanceof List) || (value instanceof String);
             case "file" -> (value instanceof Map) || (value instanceof List) || (value instanceof String);
             case "address" -> value instanceof Map; // container value expected as object
-            default ->
-                    true;
+            default -> true;
         };
     }
 

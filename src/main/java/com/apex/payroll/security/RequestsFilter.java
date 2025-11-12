@@ -22,14 +22,14 @@ import java.io.IOException;
 @Component
 @AllArgsConstructor
 @Slf4j
-public class JwtFilter extends OncePerRequestFilter {
+public class RequestsFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("✅ JwtFilter: Starting filter for request URI: {}", request.getRequestURI());
+        log.info("[INCOMING-REQ-URI]: {}", request.getRequestURI());
 
         Authentication existing = SecurityContextHolder.getContext().getAuthentication();
         if (existing != null && existing.isAuthenticated() && !(existing instanceof AnonymousAuthenticationToken))

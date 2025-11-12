@@ -39,3 +39,5 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     com.apex.payroll: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
