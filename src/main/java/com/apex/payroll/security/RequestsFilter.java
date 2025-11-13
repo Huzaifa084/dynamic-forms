@@ -32,14 +32,13 @@ public class RequestsFilter extends OncePerRequestFilter {
         log.info("[INCOMING-REQ-URI]: {}", request.getRequestURI());
 
         Authentication existing = SecurityContextHolder.getContext().getAuthentication();
-        if (existing != null && existing.isAuthenticated() && !(existing instanceof AnonymousAuthenticationToken))
-            return;
+        if (existing == null || !existing.isAuthenticated() || (existing instanceof AnonymousAuthenticationToken)) {
+            User target = userRepository.findById(1L).orElseThrow(
+                    () -> new UserNotFoundException("User not found"));
 
-        User target = userRepository.findById(1L).orElseThrow(
-                () -> new UserNotFoundException("User not found"));
-
-        var auth = new UsernamePasswordAuthenticationToken(target, null, null);
-        SecurityContextHolder.getContext().setAuthentication(auth);
+            var auth = new UsernamePasswordAuthenticationToken(target, null, null);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
 
         filterChain.doFilter(request, response);
     }
