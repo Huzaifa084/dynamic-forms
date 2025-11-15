@@ -20,6 +20,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -315,19 +317,53 @@ public class GlobalExceptionHandler {
         return response;
     }
 
-    // 404: static resource not found
+    // 404: resource / handler not found (APIs & static)
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Object> handleStaticResourceNotFound(NoResourceFoundException ex) {
-        log.debug("Static resource not found: {}", ex.getResourcePath());
-        Map<String, Object> body = Map.of(
-                "code", "RESOURCE_NOT_FOUND",
-                "message", "The requested resource was not found",
-                "suggestion", "Try /api for API endpoints or /swagger-ui/index.html for API documentation",
-                "timestamp", Instant.now()
+    public BaseResponseEntity<?> handleNoResourceFound(NoResourceFoundException ex) {
+        String path = ex.getResourcePath();
+        log.debug("Resource not found: {}", path);
+
+        // For API paths, use our standard notFound response; for others, keep a generic message
+        if (path.startsWith("/api")) {
+            return ResponseBuilder.notFound(null, "Endpoint not found: " + path);
+        }
+
+        BaseResponse.ErrorDetail detail = new BaseResponse.ErrorDetail(
+                "RESOURCE_NOT_FOUND",
+                null,
+                "The requested resource was not found"
         );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body);
+        BaseResponse<?> body = BaseResponse.builder()
+                .success(false)
+                .message("The requested resource was not found")
+                .errors(List.of(detail))
+                .meta(Map.of(
+                        "path", path,
+                        "suggestion", "Try /api for API endpoints or /swagger-ui/index.html for API documentation",
+                        "timestamp", Instant.now()
+                ))
+                .build();
+
+        return new BaseResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    // 400: missing query or form parameter
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public BaseResponseEntity<?> handleMissingRequestParam(MissingServletRequestParameterException ex) {
+        String name = ex.getParameterName();
+        String msg = "Required request parameter '" + name + "' is missing";
+        return ResponseBuilder.badRequest(name, msg);
+    }
+
+    // 400: type mismatch for query/path parameter
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public BaseResponseEntity<?> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String name = ex.getName();
+        String expected = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "value";
+        Object value = ex.getValue();
+        String valueStr = value != null ? value.toString() : "null";
+        String msg = "Invalid value '" + valueStr + "' for parameter '" + name + "'. Expected " + expected;
+        return ResponseBuilder.badRequest(name, msg);
     }
 
     // 500: catch-all
