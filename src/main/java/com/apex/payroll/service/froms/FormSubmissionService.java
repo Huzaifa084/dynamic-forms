@@ -1,6 +1,8 @@
 package com.apex.payroll.service.froms;
 
 import com.apex.payroll.dto.forms.SubmitFormRequest;
+import com.apex.payroll.exception.BadRequestException;
+import com.apex.payroll.exception.ResourceNotFoundException;
 import com.apex.payroll.model.FormDefinition;
 import com.apex.payroll.model.FormSubmission;
 import com.apex.payroll.model.User;
@@ -8,6 +10,7 @@ import com.apex.payroll.repository.FormSubmissionRepository;
 import com.apex.payroll.util.JsonHelper;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class FormSubmissionService {
 
     private final FormSubmissionRepository formSubmissionRepository;
@@ -28,31 +32,55 @@ public class FormSubmissionService {
     private final EntityManager em;
 
     public FormSubmission submitForm(UUID formDefinitionPublicId, SubmitFormRequest request, UUID companyId, User currentUser) {
-        FormDefinition formDefinition = formDefinitionService.getFormDefinitionByPublicId(formDefinitionPublicId, companyId);
+        FormDefinition formDefinition = formDefinitionService
+                .getFormDefinitionByPublicId(formDefinitionPublicId, companyId);
 
-        // Validate submission data against form definition
-        Map<String, Object> formData = request.getData();
-        formValidationService.validateFormSubmission(formDefinition.getFormDefinitionJson(), formData);
-
-        // Process reference fields
-        referenceDataService.validateReferenceFields(formDefinition.getFormDefinitionJson(), formData, companyId);
+        Map<String, Object> formData = extractAndValidateFormData(formDefinition, request, companyId);
+        String dataJson = JsonHelper.toJson(formData);
+        log.info("FormSubmissionService.submitForm - about to save submission for formDefinitionPublicId={}, companyId={}, dataJson={}",
+                formDefinitionPublicId, companyId, truncateForLog(dataJson));
 
         FormSubmission submission = new FormSubmission();
         submission.setFormDefinition(formDefinition);
         submission.setCompanyId(companyId);
-        submission.setData(JsonHelper.toJson(formData));
+        submission.setData(dataJson);
         submission.setSearchableText(extractSearchableText(formData));
         if (currentUser != null && currentUser.getId() != null) {
             submission.setSubmittedBy(em.getReference(User.class, currentUser.getId()));
         }
 
-        return formSubmissionRepository.save(submission);
+        FormSubmission saved = formSubmissionRepository.save(submission);
+        log.info("FormSubmissionService.submitForm - saved submission id={}, publicId={}, dataJson={}",
+                saved.getId(), saved.getPublicId(), truncateForLog(saved.getData()));
+        return saved;
+    }
+
+    public FormSubmission updateFormSubmission(UUID publicId, SubmitFormRequest request, UUID companyId, User currentUser) {
+        FormSubmission existing = getFormSubmissionByPublicId(publicId, companyId);
+        FormDefinition formDefinition = existing.getFormDefinition();
+
+        Map<String, Object> formData = extractAndValidateFormData(formDefinition, request, companyId);
+        String dataJson = JsonHelper.toJson(formData);
+        log.info("FormSubmissionService.updateFormSubmission - updating submission publicId={}, companyId={}, newDataJson={}",
+                publicId, companyId, truncateForLog(dataJson));
+
+        existing.setData(dataJson);
+        existing.setSearchableText(extractSearchableText(formData));
+        // Keep original submittedBy; auditing will track lastModifiedBy
+
+        FormSubmission saved = formSubmissionRepository.save(existing);
+        log.info("FormSubmissionService.updateFormSubmission - saved submission id={}, publicId={}, dataJson={}",
+                saved.getId(), saved.getPublicId(), truncateForLog(saved.getData()));
+        return saved;
     }
 
     @Transactional(readOnly = true)
     public FormSubmission getFormSubmissionByPublicId(UUID publicId, UUID companyId) {
-        return formSubmissionRepository.findByPublicIdAndCompanyId(publicId, companyId)
-                .orElseThrow(() -> new com.apex.payroll.exception.ResourceNotFoundException("Form submission not found"));
+        FormSubmission submission = formSubmissionRepository.findByPublicIdAndCompanyId(publicId, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Form submission not found"));
+        log.info("FormSubmissionService.getFormSubmissionByPublicId - loaded submission publicId={}, companyId={}, rawData={}",
+                publicId, companyId, truncateForLog(submission.getData()));
+        return submission;
     }
 
     @Transactional(readOnly = true)
@@ -95,5 +123,27 @@ public class FormSubmissionService {
             if (s.length() > 256) s = s.substring(0, 256);
             result.append(s).append(" ");
         }
+    }
+
+    private String truncateForLog(String s) {
+        if (s == null) return "null";
+        int max = 500;
+        if (s.length() <= max) return s;
+        return s.substring(0, max) + "...(truncated)";
+    }
+
+    private Map<String, Object> extractAndValidateFormData(FormDefinition formDefinition,
+                                                           SubmitFormRequest request,
+                                                           UUID companyId) {
+        Map<String, Object> formData = request.getData();
+        if (formData == null) {
+            throw new BadRequestException("Request body must contain a 'data' object with form field values, e.g. { \"data\": { ... } }");
+        }
+
+        // Validate submission data against form definition
+        formValidationService.validateFormSubmission(formDefinition.getFormDefinitionJson(), formData);
+        // Process reference fields
+        referenceDataService.validateReferenceFields(formDefinition.getFormDefinitionJson(), formData, companyId);
+        return formData;
     }
 }

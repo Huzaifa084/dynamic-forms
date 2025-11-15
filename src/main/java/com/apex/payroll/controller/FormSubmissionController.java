@@ -38,6 +38,25 @@ public class FormSubmissionController {
         return ResponseBuilder.success(toResponse(submission), "Form submitted successfully");
     }
 
+    @PutMapping("/{publicId}")
+    public BaseResponseEntity<FormSubmissionWithDefinitionResponse> updateSubmission(
+            @PathVariable UUID publicId,
+            @RequestBody SubmitFormRequest request,
+            @RequestHeader(value = "X-Company-ID", required = false) UUID companyId,
+            @AuthenticationPrincipal User currentUser) {
+        companyId = setCompanyIdIfNull(companyId);
+        FormSubmission submission = formSubmissionService.updateFormSubmission(publicId, request, companyId, currentUser);
+
+        FormSubmissionResponse submissionResponse = toResponse(submission);
+        FormDefinitionResponse definitionResponse = toDefinitionResponse(submission.getFormDefinition());
+
+        FormSubmissionWithDefinitionResponse combined = new FormSubmissionWithDefinitionResponse();
+        combined.setSubmission(submissionResponse);
+        combined.setFormDefinition(definitionResponse);
+
+        return ResponseBuilder.success(combined, "Form submission updated successfully");
+    }
+
     @GetMapping("/{publicId}")
     public BaseResponseEntity<FormSubmissionWithDefinitionResponse> getFormSubmission(
             @PathVariable UUID publicId,
