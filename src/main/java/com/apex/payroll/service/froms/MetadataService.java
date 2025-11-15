@@ -3,6 +3,7 @@ package com.apex.payroll.service.froms;
 import com.apex.payroll.dto.forms.ColumnInfoDto;
 import com.apex.payroll.dto.forms.TableInfoDto;
 import com.apex.payroll.dto.forms.TableMetadataResponse;
+import com.apex.payroll.exception.MetadataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +73,7 @@ public class MetadataService {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load table metadata: " + e.getMessage(), e);
+            throw new MetadataException("Failed to load table metadata", e);
         }
 
         // Sort tables alphabetically

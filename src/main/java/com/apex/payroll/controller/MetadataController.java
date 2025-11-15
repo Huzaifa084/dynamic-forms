@@ -21,12 +21,8 @@ public class MetadataController {
     
     @GetMapping("/tables")
     public BaseResponseEntity<TableMetadataResponse> getAvailableTables() {
-        try {
-            TableMetadataResponse tables = metadataService.getAvailableTables();
-            return ResponseBuilder.success(tables);
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        TableMetadataResponse tables = metadataService.getAvailableTables();
+        return ResponseBuilder.success(tables);
     }
     
     @GetMapping("/tables/{tableName}/data")
@@ -35,17 +31,13 @@ public class MetadataController {
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "50") Integer limit,
             @RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            TableDataResponse response = new TableDataResponse();
-            response.setTableName(tableName);
-            response.setData(referenceDataService.getReferenceData(tableName, search, companyId, limit));
-            response.setTotalCount((long) response.getData().size());
-            
-            return ResponseBuilder.success(response);
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        companyId = setCompanyIdIfNull(companyId);
+        TableDataResponse response = new TableDataResponse();
+        response.setTableName(tableName);
+        response.setData(referenceDataService.getReferenceData(tableName, search, companyId, limit));
+        response.setTotalCount((long) response.getData().size());
+
+        return ResponseBuilder.success(response);
     }
     // TODO: For dev only
     private UUID setCompanyIdIfNull(UUID companyId) {

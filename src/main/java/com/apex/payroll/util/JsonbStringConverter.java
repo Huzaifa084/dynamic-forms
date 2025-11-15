@@ -1,5 +1,6 @@
 package com.apex.payroll.util;
 
+import com.apex.payroll.exception.JsonConversionException;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import org.postgresql.util.PGobject;
@@ -19,7 +20,7 @@ public class JsonbStringConverter implements AttributeConverter<String, Object> 
         try {
             pg.setValue(attribute);
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to convert String to PGobject for JSONB", e);
+            throw new JsonConversionException("Failed to convert String to PGobject for JSONB", e);
         }
         return pg;
     }

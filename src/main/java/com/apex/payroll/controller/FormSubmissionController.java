@@ -33,33 +33,25 @@ public class FormSubmissionController {
             @RequestBody SubmitFormRequest request,
             @RequestHeader(value = "X-Company-ID", required = false) UUID companyId,
             @AuthenticationPrincipal User currentUser) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            FormSubmission submission = formSubmissionService.submitForm(formDefinitionPublicId, request, companyId, currentUser);
-            return ResponseBuilder.success(toResponse(submission), "Form submitted successfully");
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        companyId = setCompanyIdIfNull(companyId);
+        FormSubmission submission = formSubmissionService.submitForm(formDefinitionPublicId, request, companyId, currentUser);
+        return ResponseBuilder.success(toResponse(submission), "Form submitted successfully");
     }
 
     @GetMapping("/{publicId}")
     public BaseResponseEntity<FormSubmissionWithDefinitionResponse> getFormSubmission(
             @PathVariable UUID publicId,
             @RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            FormSubmission submission = formSubmissionService.getFormSubmissionByPublicId(publicId, companyId);
-            FormSubmissionResponse submissionResponse = toResponse(submission);
-            FormDefinitionResponse definitionResponse = toDefinitionResponse(submission.getFormDefinition());
+        companyId = setCompanyIdIfNull(companyId);
+        FormSubmission submission = formSubmissionService.getFormSubmissionByPublicId(publicId, companyId);
+        FormSubmissionResponse submissionResponse = toResponse(submission);
+        FormDefinitionResponse definitionResponse = toDefinitionResponse(submission.getFormDefinition());
 
-            FormSubmissionWithDefinitionResponse combined = new FormSubmissionWithDefinitionResponse();
-            combined.setSubmission(submissionResponse);
-            combined.setFormDefinition(definitionResponse);
+        FormSubmissionWithDefinitionResponse combined = new FormSubmissionWithDefinitionResponse();
+        combined.setSubmission(submissionResponse);
+        combined.setFormDefinition(definitionResponse);
 
-            return ResponseBuilder.success(combined);
-        } catch (Exception e) {
-            return ResponseBuilder.notFound("publicId", "Form submission not found");
-        }
+        return ResponseBuilder.success(combined);
     }
 
     @GetMapping
@@ -69,16 +61,12 @@ public class FormSubmissionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
             @RequestParam(required = false) String search) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
-            Page<FormSubmission> submissions = formSubmissionService.searchFormSubmissions(formDefinitionPublicId, companyId, search, pageable);
+        companyId = setCompanyIdIfNull(companyId);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
+        Page<FormSubmission> submissions = formSubmissionService.searchFormSubmissions(formDefinitionPublicId, companyId, search, pageable);
 
-            Page<FormSubmissionResponse> response = submissions.map(this::toResponse);
-            return ResponseBuilder.success(response.getContent(), page, response.getTotalElements(), response.getTotalPages());
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        Page<FormSubmissionResponse> response = submissions.map(this::toResponse);
+        return ResponseBuilder.success(response.getContent(), page, response.getTotalElements(), response.getTotalPages());
     }
 
     @GetMapping("/search")
@@ -87,16 +75,12 @@ public class FormSubmissionController {
             @RequestParam String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            Pageable pageable = PageRequest.of(page, size); // Native query handles ordering by submitted_at DESC
-            Page<FormSubmission> submissions = formSubmissionService.fullTextSearch(companyId, q, pageable);
+        companyId = setCompanyIdIfNull(companyId);
+        Pageable pageable = PageRequest.of(page, size); // Native query handles ordering by submitted_at DESC
+        Page<FormSubmission> submissions = formSubmissionService.fullTextSearch(companyId, q, pageable);
 
-            Page<FormSubmissionResponse> response = submissions.map(this::toResponse);
-            return ResponseBuilder.success(response.getContent(), page, response.getTotalElements(), response.getTotalPages());
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        Page<FormSubmissionResponse> response = submissions.map(this::toResponse);
+        return ResponseBuilder.success(response.getContent(), page, response.getTotalElements(), response.getTotalPages());
     }
 
     private FormSubmissionResponse toResponse(FormSubmission submission) {

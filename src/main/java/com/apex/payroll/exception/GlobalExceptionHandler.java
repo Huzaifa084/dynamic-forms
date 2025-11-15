@@ -223,6 +223,13 @@ public class GlobalExceptionHandler {
         return errorResponse(ex, userMsg, APIActionCode.BAD400, "JSON_PARSE_ERROR");
     }
 
+    // 500: internal JSON (storage/serialization) errors
+    @ExceptionHandler(JsonConversionException.class)
+    public BaseResponseEntity<?> handleInternalJson(JsonConversionException ex) {
+        String userMsg = "Internal JSON processing error";
+        return errorResponse(ex, userMsg, APIActionCode.SRV500, "JSON_INTERNAL_ERROR");
+    }
+
     // 429: plan limits
     @ExceptionHandler(PlanLimitExceededException.class)
     public BaseResponseEntity<?> handlePlanLimit(PlanLimitExceededException ex) {
@@ -246,6 +253,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotificationException.class)
     public BaseResponseEntity<?> handleNotification(NotificationException ex) {
         return errorResponse(ex, ex.getMessage(), APIActionCode.SRV500, "NOTIFICATION_ERROR");
+    }
+
+    // 500: metadata errors
+    @ExceptionHandler(MetadataException.class)
+    public BaseResponseEntity<?> handleMetadata(MetadataException ex) {
+        return errorResponse(ex, ex.getMessage(), APIActionCode.SRV500, "METADATA_ERROR");
     }
 
     // 400: email errors

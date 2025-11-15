@@ -1,6 +1,5 @@
 package com.apex.payroll.controller;
 
-
 import com.apex.payroll.dto.auth.LoginRequest;
 import com.apex.payroll.dto.auth.LoginResponse;
 import com.apex.payroll.dto.base.BaseResponseEntity;

@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -31,26 +32,18 @@ public class FormDefinitionController {
             @RequestBody CreateFormDefinitionRequest request,
             @RequestHeader(value = "X-Company-ID", required = false) UUID companyId,
             @AuthenticationPrincipal User currentUser) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            FormDefinition formDefinition = formDefinitionService.createFormDefinition(request, companyId, currentUser);
-            return ResponseBuilder.success(toResponse(formDefinition), "Form definition created successfully");
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        companyId = setCompanyIdIfNull(companyId);
+        FormDefinition formDefinition = formDefinitionService.createFormDefinition(request, companyId, currentUser);
+        return ResponseBuilder.success(toResponse(formDefinition), "Form definition created successfully");
     }
 
     @GetMapping("/{publicId}")
     public BaseResponseEntity<FormDefinitionResponse> getFormDefinition(
             @PathVariable UUID publicId,
             @RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            FormDefinition formDefinition = formDefinitionService.getFormDefinitionByPublicId(publicId, companyId);
-            return ResponseBuilder.success(toResponse(formDefinition));
-        } catch (Exception e) {
-            return ResponseBuilder.notFound("publicId", "Form definition not found");
-        }
+        companyId = setCompanyIdIfNull(companyId);
+        FormDefinition formDefinition = formDefinitionService.getFormDefinitionByPublicId(publicId, companyId);
+        return ResponseBuilder.success(toResponse(formDefinition));
     }
 
     @GetMapping
@@ -59,16 +52,12 @@ public class FormDefinitionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
             @RequestParam(required = false) String search) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-            Page<FormDefinition> formDefinitions = formDefinitionService.searchFormDefinitions(companyId, search, pageable);
+        companyId = setCompanyIdIfNull(companyId);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+        Page<FormDefinition> formDefinitions = formDefinitionService.searchFormDefinitions(companyId, search, pageable);
 
-            Page<FormDefinitionResponse> response = formDefinitions.map(this::toResponseTemp);
-            return ResponseBuilder.success(response.getContent(), page, response.getTotalElements(), response.getTotalPages());
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        Page<FormDefinitionResponse> response = formDefinitions.map(this::toResponseTemp);
+        return ResponseBuilder.success(response.getContent(), page, response.getTotalElements(), response.getTotalPages());
     }
 
     @PutMapping("/{publicId}")
@@ -77,26 +66,18 @@ public class FormDefinitionController {
             @RequestBody CreateFormDefinitionRequest request,
             @RequestHeader(value = "X-Company-ID", required = false) UUID companyId,
             @AuthenticationPrincipal User currentUser) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            FormDefinition formDefinition = formDefinitionService.updateFormDefinition(publicId, request, companyId, currentUser);
-            return ResponseBuilder.success(toResponse(formDefinition), "Form definition updated successfully");
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        companyId = setCompanyIdIfNull(companyId);
+        FormDefinition formDefinition = formDefinitionService.updateFormDefinition(publicId, request, companyId, currentUser);
+        return ResponseBuilder.success(toResponse(formDefinition), "Form definition updated successfully");
     }
 
     @DeleteMapping("/{publicId}")
     public BaseResponseEntity<Void> deleteFormDefinition(
             @PathVariable UUID publicId,
             @RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
-        try {
-            companyId = setCompanyIdIfNull(companyId);
-            formDefinitionService.deleteFormDefinition(publicId, companyId);
-            return ResponseBuilder.success("Form definition deleted successfully");
-        } catch (Exception e) {
-            return ResponseBuilder.error(e.getMessage());
-        }
+        companyId = setCompanyIdIfNull(companyId);
+        formDefinitionService.deleteFormDefinition(publicId, companyId);
+        return ResponseBuilder.success("Form definition deleted successfully");
     }
 
     private FormDefinitionResponse toResponse(FormDefinition formDefinition) {
@@ -104,7 +85,7 @@ public class FormDefinitionController {
         response.setPublicId(formDefinition.getPublicId());
         response.setName(formDefinition.getName());
         response.setDescription(formDefinition.getDescription());
-        response.setFormDefinition(JsonHelper.fromJson(formDefinition.getFormDefinitionJson(), java.util.Map.class));
+        response.setFormDefinition(JsonHelper.fromJson(formDefinition.getFormDefinitionJson(), Map.class));
         response.setVersion(formDefinition.getVersion());
         response.setCreatedDate(formDefinition.getCreatedDate().orElse(null));
         return response;

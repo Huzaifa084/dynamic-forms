@@ -52,7 +52,7 @@ public class FormSubmissionService {
     @Transactional(readOnly = true)
     public FormSubmission getFormSubmissionByPublicId(UUID publicId, UUID companyId) {
         return formSubmissionRepository.findByPublicIdAndCompanyId(publicId, companyId)
-                .orElseThrow(() -> new RuntimeException("Form submission not found"));
+                .orElseThrow(() -> new com.apex.payroll.exception.ResourceNotFoundException("Form submission not found"));
     }
 
     @Transactional(readOnly = true)
