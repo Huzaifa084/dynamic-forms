@@ -6,6 +6,7 @@ import com.apex.payroll.dto.auth.LoginResponse;
 import com.apex.payroll.dto.base.BaseResponseEntity;
 import com.apex.payroll.dto.base.ResponseBuilder;
 import com.apex.payroll.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,22 @@ public class AuthController {
 
 
     @PostMapping("/refresh")
+    @Operation(summary = """
+            Handles token refresh requests for both web and mobile clients.
+            This method extracts the refresh token from multiple possible sources: -
+            A cookie (`refreshToken`) for web clients. -
+            An `Authorization` header with the prefix "Refresh " for mobile clients. -
+            A request body parameter (`refreshToken`) as a fallback.
+            Once the token is identified, it is validated and refreshed using the `AuthService`.
+            A new refresh token is then added to the response as a secure HTTP-only cookie.
+            Params:
+            cookie – The refresh token from the cookie (optional).
+            header – The refresh token from the Authorization header (optional).
+            body – The refresh token from the request body (optional).
+            response – The HTTP response to which the new refresh token cookie is added.
+            Returns:
+            A response entity containing the new access token and refresh token.""",
+            description = "Refresh")
     public BaseResponseEntity<LoginResponse> refresh(
             @CookieValue(value = "refreshToken", required = false) String cookie,
             @RequestHeader(value = "Authorization", required = false) String header,

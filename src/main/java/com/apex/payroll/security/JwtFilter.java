@@ -37,7 +37,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("➡️ [INCOMING-REQ-URI]: {}", request.getRequestURI());
+        log.info("➡️ : {}", request.getRequestURI());
 
         String token = parseJwt(request);
         if (request.getRequestURI().equals("/api/auth/otp/verify")) {
