@@ -3,6 +3,7 @@ package com.apex.payroll.controller;
 import com.apex.payroll.dto.base.BaseResponseEntity;
 import com.apex.payroll.dto.base.ResponseBuilder;
 import com.apex.payroll.dto.forms.*;
+import com.apex.payroll.model.FormDefinition;
 import com.apex.payroll.model.FormSubmission;
 import com.apex.payroll.model.User;
 import com.apex.payroll.service.froms.FormSubmissionService;
@@ -42,13 +43,20 @@ public class FormSubmissionController {
     }
 
     @GetMapping("/{publicId}")
-    public BaseResponseEntity<FormSubmissionResponse> getFormSubmission(
+    public BaseResponseEntity<FormSubmissionWithDefinitionResponse> getFormSubmission(
             @PathVariable UUID publicId,
             @RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
         try {
             companyId = setCompanyIdIfNull(companyId);
             FormSubmission submission = formSubmissionService.getFormSubmissionByPublicId(publicId, companyId);
-            return ResponseBuilder.success(toResponse(submission));
+            FormSubmissionResponse submissionResponse = toResponse(submission);
+            FormDefinitionResponse definitionResponse = toDefinitionResponse(submission.getFormDefinition());
+
+            FormSubmissionWithDefinitionResponse combined = new FormSubmissionWithDefinitionResponse();
+            combined.setSubmission(submissionResponse);
+            combined.setFormDefinition(definitionResponse);
+
+            return ResponseBuilder.success(combined);
         } catch (Exception e) {
             return ResponseBuilder.notFound("publicId", "Form submission not found");
         }
@@ -100,6 +108,17 @@ public class FormSubmissionController {
         response.setSubmittedAt(submission.getSubmittedAt());
         response.setSubmittedBy(submission.getSubmittedBy() != null ?
                 submission.getSubmittedBy().getFullName() : "System");
+        return response;
+    }
+
+    private FormDefinitionResponse toDefinitionResponse(FormDefinition formDefinition) {
+        FormDefinitionResponse response = new FormDefinitionResponse();
+        response.setPublicId(formDefinition.getPublicId());
+        response.setName(formDefinition.getName());
+        response.setDescription(formDefinition.getDescription());
+        response.setFormDefinition(JsonHelper.fromJson(formDefinition.getFormDefinitionJson(), java.util.Map.class));
+        response.setVersion(formDefinition.getVersion());
+        response.setCreatedDate(formDefinition.getCreatedDate().orElse(null));
         return response;
     }
 
