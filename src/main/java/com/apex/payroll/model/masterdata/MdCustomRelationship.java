@@ -40,4 +40,3 @@ public class MdCustomRelationship {
     @Column(name = "on_update_action", length = 30)
     private String onUpdate;
 }
-

@@ -52,4 +52,3 @@ public class MdCustomColumn {
     @Column(name = "default_value")
     private String defaultValue;
 }
-

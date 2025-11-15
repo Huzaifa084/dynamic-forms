@@ -31,4 +31,3 @@ public class MdFormBinding {
     @Column(name = "binding_json", columnDefinition = "jsonb", nullable = false)
     private String bindingJson;
 }
-
