@@ -64,7 +64,7 @@ public class FormDefinitionController {
             Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
             Page<FormDefinition> formDefinitions = formDefinitionService.searchFormDefinitions(companyId, search, pageable);
 
-            Page<FormDefinitionResponse> response = formDefinitions.map(this::toResponse);
+            Page<FormDefinitionResponse> response = formDefinitions.map(this::toResponseTemp);
             return ResponseBuilder.success(response.getContent(), page, response.getTotalElements(), response.getTotalPages());
         } catch (Exception e) {
             return ResponseBuilder.error(e.getMessage());
@@ -105,6 +105,17 @@ public class FormDefinitionController {
         response.setName(formDefinition.getName());
         response.setDescription(formDefinition.getDescription());
         response.setFormDefinition(JsonHelper.fromJson(formDefinition.getFormDefinitionJson(), java.util.Map.class));
+        response.setVersion(formDefinition.getVersion());
+        response.setCreatedDate(formDefinition.getCreatedDate().orElse(null));
+        return response;
+    }
+
+    // TODO: Temp
+    private FormDefinitionResponse toResponseTemp(FormDefinition formDefinition) {
+        FormDefinitionResponse response = new FormDefinitionResponse();
+        response.setPublicId(formDefinition.getPublicId());
+        response.setName(formDefinition.getName());
+        response.setDescription(formDefinition.getDescription());
         response.setVersion(formDefinition.getVersion());
         response.setCreatedDate(formDefinition.getCreatedDate().orElse(null));
         return response;
