@@ -8,6 +8,7 @@ import com.apex.payroll.model.FormSubmission;
 import com.apex.payroll.model.User;
 import com.apex.payroll.service.froms.FormSubmissionService;
 import com.apex.payroll.util.JsonHelper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -107,7 +108,13 @@ public class FormSubmissionController {
         response.setPublicId(submission.getPublicId());
         response.setFormDefinitionPublicId(submission.getFormDefinition().getPublicId());
         response.setFormName(submission.getFormDefinition().getName());
-        response.setData(JsonHelper.fromJson(submission.getData(), Map.class));
+        response.setData(
+                JsonHelper.fromJson(
+                        submission.getData(),
+                        new TypeReference<Map<String, Object>>() {
+                        }
+                )
+        );
         response.setSubmittedAt(submission.getSubmittedAt());
         response.setSubmittedBy(submission.getSubmittedBy() != null ?
                 submission.getSubmittedBy().getFullName() : "System");
@@ -119,7 +126,13 @@ public class FormSubmissionController {
         response.setPublicId(formDefinition.getPublicId());
         response.setName(formDefinition.getName());
         response.setDescription(formDefinition.getDescription());
-        response.setFormDefinition(JsonHelper.fromJson(formDefinition.getFormDefinitionJson(), java.util.Map.class));
+        response.setFormDefinition(
+                JsonHelper.fromJson(
+                        formDefinition.getFormDefinitionJson(),
+                        new TypeReference<Map<String, Object>>() {
+                        }
+                )
+        );
         response.setVersion(formDefinition.getVersion());
         response.setCreatedDate(formDefinition.getCreatedDate().orElse(null));
         return response;

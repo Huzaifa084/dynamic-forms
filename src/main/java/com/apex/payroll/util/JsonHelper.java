@@ -2,6 +2,7 @@ package com.apex.payroll.util;
 
 import com.apex.payroll.exception.JsonConversionException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -22,6 +23,14 @@ public final class JsonHelper {
     public static <T> T fromJson(String json, Class<T> clazz) {
         try {
             return mapper.readValue(json, clazz);
+        } catch (Exception e) {
+            throw new JsonConversionException("JSON parsing failed", e);
+        }
+    }
+
+    public static <T> T fromJson(String json, TypeReference<T> typeRef) {
+        try {
+            return mapper.readValue(json, typeRef);
         } catch (Exception e) {
             throw new JsonConversionException("JSON parsing failed", e);
         }

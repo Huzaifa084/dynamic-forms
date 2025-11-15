@@ -47,7 +47,11 @@ public class FormValidationService {
     }
 
     public void validateFormSubmission(String formDefinitionJson, Map<String, Object> formData) {
-        Map<String, Object> schema = JsonHelper.fromJson(formDefinitionJson, Map.class);
+        Map<String, Object> schema = JsonHelper.fromJson(
+                formDefinitionJson,
+                new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                }
+        );
         List<String> errors = new ArrayList<>();
 
         Object comps = schema.get("components");

@@ -8,6 +8,7 @@ import com.apex.payroll.model.FormDefinition;
 import com.apex.payroll.model.User;
 import com.apex.payroll.service.froms.FormDefinitionService;
 import com.apex.payroll.util.JsonHelper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -85,7 +86,13 @@ public class FormDefinitionController {
         response.setPublicId(formDefinition.getPublicId());
         response.setName(formDefinition.getName());
         response.setDescription(formDefinition.getDescription());
-        response.setFormDefinition(JsonHelper.fromJson(formDefinition.getFormDefinitionJson(), Map.class));
+        response.setFormDefinition(
+                JsonHelper.fromJson(
+                        formDefinition.getFormDefinitionJson(),
+                        new TypeReference<>() {
+                        }
+                )
+        );
         response.setVersion(formDefinition.getVersion());
         response.setCreatedDate(formDefinition.getCreatedDate().orElse(null));
         return response;
