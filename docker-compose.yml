@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: test
     ports:
-      - "5436:5432"
+      - "5438:5432"
     volumes:
       - payroll_pgdata:/var/lib/postgresql/data
     restart: unless-stopped
