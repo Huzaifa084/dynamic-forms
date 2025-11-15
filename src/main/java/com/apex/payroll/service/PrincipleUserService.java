@@ -1,6 +1,7 @@
 package com.apex.payroll.service;
 
 import com.apex.payroll.model.User;
+import com.apex.payroll.security.UserDetailsImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +18,7 @@ public class PrincipleUserService {
     private EntityManager entityManager;
 
     public Optional<User> getCurrentUser() {
-//        Long userId = getCurrentUserId();
-        // TODO: Replace with actual user ID retrieval logic
-        Long userId = 1L;
-        if (userId == null) return Optional.empty();
-        // For auditing, return a lightweight reference to avoid sharing persistent collections across sessions
+        Long userId = getCurrentUserId();
         try {
             User ref = entityManager.getReference(User.class, userId);
             return Optional.of(ref);
@@ -31,20 +28,20 @@ public class PrincipleUserService {
         }
     }
 
-//    public Long getCurrentUserId() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            log.debug("No authenticated user found for auditing");
-//            return null;
-//        }
-//
-//        Object principal = authentication.getPrincipal();
-//
-//        if (principal instanceof UserDetailsImpl userDetails) {
-//            log.debug("Found logged user for userPId: {}, username: {}", userDetails.getId(), userDetails.getUsername());
-//            return userDetails.getId();
-//        }
-//        return null;
-//    }
+    public Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.debug("No authenticated user found for auditing");
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof UserDetailsImpl userDetails) {
+            log.debug("Found logged user for userPId: {}, username: {}", userDetails.getId(), userDetails.getUsername());
+            return userDetails.getId();
+        }
+        return null;
+    }
 
 }

@@ -6,14 +6,14 @@ spring:
     name: PayRoll
 
   datasource:
-    url: jdbc:postgresql://localhost:5435/demo
+    url: jdbc:postgresql://localhost:5436/demo
     username: postgres
     password: test
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -29,9 +29,21 @@ spring:
 
   jackson:
     property-naming-strategy: SNAKE_CASE
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+  data:
+    redis:
+      host: localhost
+      port: 6388
+
+jwt:
+  secret: "MCsAzvFBHnAv0CWIZonhazMPmT2kkrTSQ8JOVHSRnI8Xo8hdrnRcTQkI6ux3JNJx"
+  encryption-secret: "e1n5j0Gbc1bFRzf9dkyD4KZONmh8ONjUzwdGe8gMn-6EqPshH4YSKxzUYuNqjIpn"
+  access-ttl: "P30D"
+  refresh-ttl: "P30D"
+  pre-auth-ttl: "PT5M"
+  password-reset-ttl: "PT15M"
+  issuer: "GuardCall"
+  min-secret-key-length: 64
 
 logging:
   level:

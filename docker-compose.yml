@@ -1,0 +1,34 @@
+services:
+  payroll-postgres:
+    image: postgres:16
+    container_name: payroll-postgres
+    environment:
+      POSTGRES_DB: demo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+    ports:
+      - "5436:5432"
+    volumes:
+      - payroll_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - payroll-net
+
+  payroll-redis:
+    image: redis:7
+    container_name: payroll-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6388:6379"
+    volumes:
+      - payroll_redisdata:/data
+    restart: unless-stopped
+    networks:
+      - payroll-net
+
+networks:
+  payroll-net:
+
+volumes:
+  payroll_pgdata:
+  payroll_redisdata:
