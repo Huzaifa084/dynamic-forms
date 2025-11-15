@@ -11,6 +11,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class DevDataSeeder implements ApplicationRunner {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -30,9 +32,9 @@ public class DevDataSeeder implements ApplicationRunner {
             // Create a default developer user
             User user = User.builder()
                     .publicId(UUID.randomUUID())
-                    .email("dev@example.com")
+                    .email("devuser@yopmail.com")
                     // For dev environments, passwordHash can be any placeholder
-                    .passwordHash("dev-password-placeholder")
+                    .passwordHash(passwordEncoder.encode("pass123"))
                     .firstName("Dev")
                     .lastName("User")
                     .username("devuser")
