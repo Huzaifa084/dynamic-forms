@@ -22,9 +22,9 @@ spring:
         format_sql: false
 
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
-    baseline-on-migrate: true
+    baseline-on-migrate: false
     baseline-version: 0
 
   jackson:

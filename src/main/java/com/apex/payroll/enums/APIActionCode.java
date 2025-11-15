@@ -17,16 +17,16 @@ public enum APIActionCode {
     FOR403, // forbidden
     NFD404, // not found
     DUP409, // duplicate
-    BAD400,
-    TOO_MANY_429,
-    UN_AUTH401,
-    SRV503,
-    SRV504,
+    BAD400, // bad request
+    TOO_MANY_429, // too many requests
+    UN_AUTH401, // unauthorized, revoked token
+    SRV503, // service unavailable
+    SRV504, // service timeout
 
     // Domain‐specific
     NFA568, // insufficient funds
 
     // Server‐side
     SRV500,  // internal server error
-    ERR,
+    ERR, // generic error
 }
