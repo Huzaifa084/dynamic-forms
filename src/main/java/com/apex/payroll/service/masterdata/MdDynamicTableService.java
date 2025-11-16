@@ -3,6 +3,7 @@ package com.apex.payroll.service.masterdata;
 import com.apex.payroll.dto.masterdata.MdColumnDefinitionDto;
 import com.apex.payroll.dto.masterdata.MdRelationshipDefinitionDto;
 import com.apex.payroll.dto.masterdata.MdTableDefinitionRequest;
+import com.apex.payroll.dto.masterdata.MdTablePreviewResponse;
 import com.apex.payroll.dto.masterdata.MdTableResponse;
 import com.apex.payroll.exception.BadRequestException;
 import com.apex.payroll.model.masterdata.*;
@@ -26,15 +27,30 @@ public class MdDynamicTableService {
 
     private static final String DEFAULT_SCHEMA = "dynamic_forms";
     private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$");
+    // System-managed columns: technical PK + auditing-style columns (do not allow frontend to define these)
+    private static final Set<String> RESERVED_SYSTEM_COLUMNS = Set.of(
+            "id",
+            "created_by",
+            "created_date",
+            "last_modified_by",
+            "last_modified_date"
+    );
 
     private final MdCustomTableRepository tableRepository;
     private final MdCustomColumnRepository columnRepository;
     private final MdCustomRelationshipRepository relationshipRepository;
     private final JdbcTemplate jdbcTemplate;
 
-    public String previewCreateTableSql(MdTableDefinitionRequest request) {
+    public MdTablePreviewResponse previewCreateTable(MdTableDefinitionRequest request) {
         validateDefinition(request, true);
-        return buildCreateTableSql(request);
+
+        MdTablePreviewResponse preview = new MdTablePreviewResponse();
+        preview.setSchemaName(DEFAULT_SCHEMA);
+        preview.setTableName(normalizeName(request.getTableName()));
+        preview.setColumns(request.getColumns());
+        preview.setRelationships(request.getRelationships());
+        preview.setCreateTableSql(buildCreateTableSql(request));
+        return preview;
     }
 
     @Transactional
@@ -162,26 +178,22 @@ public class MdDynamicTableService {
             throw new BadRequestException("Table with name '" + normalizedTable + "' already exists");
         }
 
-        boolean hasPrimary = false;
         Set<String> seenColumns = new HashSet<>();
         for (MdColumnDefinitionDto col : req.getColumns()) {
             if (isBlank(col.getColumnName()) || !NAME_PATTERN.matcher(col.getColumnName()).matches()) {
                 throw new BadRequestException("Invalid columnName: " + col.getColumnName());
             }
             String normalized = normalizeName(col.getColumnName());
+            if (RESERVED_SYSTEM_COLUMNS.contains(normalized)) {
+                throw new BadRequestException("Column name '" + normalized + "' is reserved and added automatically by the system");
+            }
             if (!seenColumns.add(normalized)) {
                 throw new BadRequestException("Duplicate columnName: " + normalized);
             }
             if (col.getDataType() == null) {
                 throw new BadRequestException("dataType is required for column: " + normalized);
             }
-            if (Boolean.TRUE.equals(col.getPrimaryKey())) {
-                hasPrimary = true;
-            }
             validateColumnType(col);
-        }
-        if (!hasPrimary) {
-            throw new BadRequestException("At least one primaryKey column is required");
         }
     }
 
@@ -221,6 +233,14 @@ public class MdDynamicTableService {
         List<String> pkColumns = new ArrayList<>();
         List<String> uniqueConstraints = new ArrayList<>();
 
+        // Technical primary key & auditing columns (added implicitly, not part of the client definition)
+        columnDefs.add(quoteIdentifier("id") + " BIGSERIAL");
+        pkColumns.add(quoteIdentifier("id"));
+        columnDefs.add(quoteIdentifier("created_by") + " BIGINT");
+        columnDefs.add(quoteIdentifier("created_date") + " TIMESTAMP NOT NULL DEFAULT now()");
+        columnDefs.add(quoteIdentifier("last_modified_by") + " BIGINT");
+        columnDefs.add(quoteIdentifier("last_modified_date") + " TIMESTAMP");
+
         for (MdColumnDefinitionDto col : req.getColumns()) {
             String colName = normalizeName(col.getColumnName());
             StringBuilder sb = new StringBuilder();
@@ -234,10 +254,8 @@ public class MdDynamicTableService {
             }
             columnDefs.add(sb.toString());
 
-            if (Boolean.TRUE.equals(col.getPrimaryKey())) {
-                pkColumns.add(quoteIdentifier(colName));
-            }
-            if (Boolean.TRUE.equals(col.getUnique())) {
+            // Treat primaryKey flag on user columns as a uniqueness requirement; technical PK is always 'id'
+            if (Boolean.TRUE.equals(col.getPrimaryKey()) || Boolean.TRUE.equals(col.getUnique())) {
                 uniqueConstraints.add("UNIQUE (" + quoteIdentifier(colName) + ")");
             }
         }
@@ -325,9 +343,11 @@ public class MdDynamicTableService {
         return s == null || s.trim().isEmpty();
     }
 
-    private MdTableResponse toResponse(MdCustomTable table,
-                                       List<MdCustomColumn> columns,
-                                       List<MdCustomRelationship> relationships) {
+    private MdTableResponse toResponse(
+            MdCustomTable table,
+            List<MdCustomColumn> columns,
+            List<MdCustomRelationship> relationships
+    ) {
         MdTableResponse resp = new MdTableResponse();
         resp.setId(table.getId());
         resp.setCompanyId(table.getCompanyId());
@@ -371,4 +391,3 @@ public class MdDynamicTableService {
         return resp;
     }
 }
-

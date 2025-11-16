@@ -3,6 +3,7 @@ package com.apex.payroll.controller.masterdata;
 import com.apex.payroll.dto.base.BaseResponseEntity;
 import com.apex.payroll.dto.base.ResponseBuilder;
 import com.apex.payroll.dto.masterdata.MdTableDefinitionRequest;
+import com.apex.payroll.dto.masterdata.MdTablePreviewResponse;
 import com.apex.payroll.dto.masterdata.MdTableResponse;
 import com.apex.payroll.service.masterdata.MdDynamicTableService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,15 +23,17 @@ public class MdDynamicTableController {
     private final MdDynamicTableService tableService;
 
     @PostMapping("/preview")
-    @Operation(summary = "Preview the CREATE TABLE SQL for a master data table without applying it")
-    public BaseResponseEntity<String> previewCreateTable(@RequestBody MdTableDefinitionRequest request) {
-        String sql = tableService.previewCreateTableSql(request);
-        return ResponseBuilder.success(sql, "Preview generated successfully");
+    @Operation(summary = "Preview master data table structure and generated DDL without applying it")
+    public BaseResponseEntity<MdTablePreviewResponse> previewCreateTable(@RequestBody MdTableDefinitionRequest request) {
+        request.setCompanyId(setCompanyIdIfNull(request.getCompanyId()));
+        MdTablePreviewResponse preview = tableService.previewCreateTable(request);
+        return ResponseBuilder.success(preview, "Preview generated successfully");
     }
 
     @PostMapping
     @Operation(summary = "Create and apply a master data table for the given company")
     public BaseResponseEntity<MdTableResponse> createAndApply(@RequestBody MdTableDefinitionRequest request) {
+        request.setCompanyId(setCompanyIdIfNull(request.getCompanyId()));
         MdTableResponse response = tableService.applyCreateTable(request);
         return ResponseBuilder.success(response, "Master data table created successfully");
     }
@@ -52,9 +55,6 @@ public class MdDynamicTableController {
 
     // TODO: For dev only
     private UUID setCompanyIdIfNull(UUID companyId) {
-        if (companyId == null) {
-            return UUID.fromString("5a0c4535-d39d-4a1f-b847-b2717ca3640f");
-        }
-        return companyId;
+        return UUID.fromString("5a0c4535-d39d-4a1f-b847-b2717ca3640f");
     }
 }
