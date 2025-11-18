@@ -5,6 +5,7 @@ import com.apex.payroll.dto.masterdata.MdRelationshipDefinitionDto;
 import com.apex.payroll.dto.masterdata.MdTableDefinitionRequest;
 import com.apex.payroll.dto.masterdata.MdTablePreviewResponse;
 import com.apex.payroll.dto.masterdata.MdTableResponse;
+import com.apex.payroll.dto.masterdata.MdTableSummaryResponse;
 import com.apex.payroll.exception.BadRequestException;
 import com.apex.payroll.model.masterdata.*;
 import com.apex.payroll.repository.masterdata.MdCustomColumnRepository;
@@ -139,19 +140,26 @@ public class MdDynamicTableService {
         return toResponse(table, new ArrayList<>(columnByName.values()), relationships);
     }
 
-    public List<MdTableResponse> listTables(UUID companyId) {
+    public List<MdTableSummaryResponse> listTables(UUID companyId) {
         return tableRepository.findByCompanyId(companyId).stream()
                 .map(t -> {
-                    List<MdCustomColumn> cols = columnRepository.findByTable(t);
-                    List<MdCustomRelationship> rels = relationshipRepository.findBySourceTable(t);
-                    return toResponse(t, cols, rels);
+                    MdTableSummaryResponse resp = new MdTableSummaryResponse();
+                    resp.setPublicId(t.getPublicId());
+                    resp.setCompanyId(t.getCompanyId());
+                    resp.setSchemaName(t.getSchemaName());
+                    resp.setTableName(t.getTableName());
+                    resp.setDisplayName(t.getDisplayName());
+                    resp.setVersion(t.getVersion());
+                    resp.setStatus(t.getStatus());
+                    resp.setCreatedDate(t.getCreatedDate().orElse(null));
+                    return resp;
                 })
                 .collect(Collectors.toList());
     }
 
-    public MdTableResponse getTable(Long id) {
-        MdCustomTable t = tableRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("Master data table not found: " + id));
+    public MdTableResponse getTable(UUID publicId, UUID companyId) {
+        MdCustomTable t = tableRepository.findByPublicIdAndCompanyId(publicId, companyId)
+                .orElseThrow(() -> new BadRequestException("Master data table not found: " + publicId));
         List<MdCustomColumn> cols = columnRepository.findByTable(t);
         List<MdCustomRelationship> rels = relationshipRepository.findBySourceTable(t);
         return toResponse(t, cols, rels);
@@ -349,7 +357,7 @@ public class MdDynamicTableService {
             List<MdCustomRelationship> relationships
     ) {
         MdTableResponse resp = new MdTableResponse();
-        resp.setId(table.getId());
+        resp.setPublicId(table.getPublicId());
         resp.setCompanyId(table.getCompanyId());
         resp.setSchemaName(table.getSchemaName());
         resp.setTableName(table.getTableName());

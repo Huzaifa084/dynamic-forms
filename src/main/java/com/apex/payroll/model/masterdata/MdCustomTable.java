@@ -13,6 +13,9 @@ import java.util.UUID;
 @Table(name = "md_custom_tables")
 public class MdCustomTable extends AbstractAuditable<Long> {
 
+    @Column(name = "public_id", nullable = false, updatable = false, unique = true)
+    private UUID publicId;
+
     @Column(name = "company_id", nullable = false)
     private UUID companyId;
 
@@ -31,5 +34,12 @@ public class MdCustomTable extends AbstractAuditable<Long> {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private MdTableStatus status = MdTableStatus.DRAFT;
+
+    @PrePersist
+    void initPublicId() {
+        if (publicId == null) {
+            publicId = UUID.randomUUID();
+        }
+    }
 }
 

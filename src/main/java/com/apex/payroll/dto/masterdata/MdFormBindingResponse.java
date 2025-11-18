@@ -7,12 +7,10 @@ import java.util.UUID;
 
 @Data
 public class MdFormBindingResponse {
-    private Long id;
     private UUID companyId;
     private UUID formDefinitionPublicId;
-    private Long primaryTableId;
+    private UUID primaryTablePublicId;
     private String type;
-    private List<MdFieldMappingDto> mappings;
-    private List<MdChildTableBindingDto> childTables;
+    private List<MdFormFieldBindingDto> mappings;
+    private List<MdFormChildTableBindingDto> childTables;
 }
-

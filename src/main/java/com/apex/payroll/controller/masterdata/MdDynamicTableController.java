@@ -5,6 +5,7 @@ import com.apex.payroll.dto.base.ResponseBuilder;
 import com.apex.payroll.dto.masterdata.MdTableDefinitionRequest;
 import com.apex.payroll.dto.masterdata.MdTablePreviewResponse;
 import com.apex.payroll.dto.masterdata.MdTableResponse;
+import com.apex.payroll.dto.masterdata.MdTableSummaryResponse;
 import com.apex.payroll.service.masterdata.MdDynamicTableService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,17 +40,20 @@ public class MdDynamicTableController {
     }
 
     @GetMapping
-    @Operation(summary = "List all master data tables defined for the current company")
-    public BaseResponseEntity<List<MdTableResponse>> listTables(@RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
+    @Operation(summary = "List all master data tables defined for the current company (without columns)")
+    public BaseResponseEntity<List<MdTableSummaryResponse>> listTables(@RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
         companyId = setCompanyIdIfNull(companyId); // TODO: For dev only
-        List<MdTableResponse> tables = tableService.listTables(companyId);
+        List<MdTableSummaryResponse> tables = tableService.listTables(companyId);
         return ResponseBuilder.success(tables);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{publicId}")
     @Operation(summary = "Get a master data table definition with its columns and relationships")
-    public BaseResponseEntity<MdTableResponse> getTable(@PathVariable Long id) {
-        MdTableResponse table = tableService.getTable(id);
+    public BaseResponseEntity<MdTableResponse> getTable(
+            @PathVariable UUID publicId,
+            @RequestHeader(value = "X-Company-ID", required = false) UUID companyId) {
+        companyId = setCompanyIdIfNull(companyId); // TODO: For dev only
+        MdTableResponse table = tableService.getTable(publicId, companyId);
         return ResponseBuilder.success(table);
     }
 

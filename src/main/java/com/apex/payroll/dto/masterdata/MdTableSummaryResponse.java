@@ -4,11 +4,10 @@ import com.apex.payroll.model.masterdata.MdTableStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Data
-public class MdTableResponse {
+public class MdTableSummaryResponse {
     private UUID publicId;
     private UUID companyId;
     private String schemaName;
@@ -17,7 +16,5 @@ public class MdTableResponse {
     private Integer version;
     private MdTableStatus status;
     private LocalDateTime createdDate;
-    private List<MdColumnDefinitionDto> columns;
-    private List<MdRelationshipDefinitionDto> relationships;
 }
 
