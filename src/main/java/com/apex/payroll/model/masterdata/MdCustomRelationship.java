@@ -1,5 +1,6 @@
 package com.apex.payroll.model.masterdata;
 
+import com.apex.payroll.util.MdFkActionConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,11 +35,11 @@ public class MdCustomRelationship {
     @Column(name = "relation_type", nullable = false, length = 20)
     private MdRelationType relationType;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = MdFkActionConverter.class)
     @Column(name = "on_delete_action", length = 20)
     private MdFkAction onDelete;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = MdFkActionConverter.class)
     @Column(name = "on_update_action", length = 20)
     private MdFkAction onUpdate;
 }

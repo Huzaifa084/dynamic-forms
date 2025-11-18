@@ -16,7 +16,9 @@ import com.apex.payroll.repository.masterdata.MdCustomColumnRepository;
 import com.apex.payroll.repository.masterdata.MdCustomTableRepository;
 import com.apex.payroll.repository.masterdata.MdFormBindingRepository;
 import com.apex.payroll.util.JsonHelper;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,9 +39,10 @@ public class MdFormBindingService {
     private final MdCustomColumnRepository columnRepository;
     private final MdFormBindingRepository bindingRepository;
 
-    public MdFormBindingResponse upsertBinding(UUID companyId,
-                                               UUID formDefinitionPublicId,
-                                               MdFormBindingRequest request) {
+    public MdFormBindingResponse upsertBinding(
+            UUID companyId,
+            UUID formDefinitionPublicId,
+            MdFormBindingRequest request) {
 
         FormDefinition formDefinition = formDefinitionRepository
                 .findByPublicIdAndCompanyId(formDefinitionPublicId, companyId)
@@ -148,43 +151,14 @@ public class MdFormBindingService {
     }
 
     // Internal config structure persisted as JSON in MdFormBinding.bindingJson
+    @Setter
+    @Getter
     private static class BindingConfig {
         private String type;
         private Long primaryTableId;
         private List<MdFieldMappingDto> mappings;
         private List<MdChildTableBindingDto> childTables;
 
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public Long getPrimaryTableId() {
-            return primaryTableId;
-        }
-
-        public void setPrimaryTableId(Long primaryTableId) {
-            this.primaryTableId = primaryTableId;
-        }
-
-        public List<MdFieldMappingDto> getMappings() {
-            return mappings;
-        }
-
-        public void setMappings(List<MdFieldMappingDto> mappings) {
-            this.mappings = mappings;
-        }
-
-        public List<MdChildTableBindingDto> getChildTables() {
-            return childTables;
-        }
-
-        public void setChildTables(List<MdChildTableBindingDto> childTables) {
-            this.childTables = childTables;
-        }
     }
 }
 
