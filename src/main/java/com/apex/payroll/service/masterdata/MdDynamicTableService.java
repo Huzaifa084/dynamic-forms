@@ -285,11 +285,11 @@ public class MdDynamicTableService {
                     .append(" REFERENCES ").append(tgtTable)
                     .append(" (").append(quoteIdentifier(rel.getTargetColumn().getColumnName())).append(")");
 
-            if (rel.getOnDelete() != null && !rel.getOnDelete().isBlank()) {
-                sb.append(" ON DELETE ").append(rel.getOnDelete());
+            if (rel.getOnDelete() != null) {
+                sb.append(" ON DELETE ").append(rel.getOnDelete().getSqlKeyword());
             }
-            if (rel.getOnUpdate() != null && !rel.getOnUpdate().isBlank()) {
-                sb.append(" ON UPDATE ").append(rel.getOnUpdate());
+            if (rel.getOnUpdate() != null) {
+                sb.append(" ON UPDATE ").append(rel.getOnUpdate().getSqlKeyword());
             }
             sb.append(";");
             ddls.add(sb.toString());

@@ -34,9 +34,11 @@ public class MdCustomRelationship {
     @Column(name = "relation_type", nullable = false, length = 20)
     private MdRelationType relationType;
 
-    @Column(name = "on_delete_action", length = 30)
-    private String onDelete;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "on_delete_action", length = 20)
+    private MdFkAction onDelete;
 
-    @Column(name = "on_update_action", length = 30)
-    private String onUpdate;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "on_update_action", length = 20)
+    private MdFkAction onUpdate;
 }
